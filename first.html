@@ -1,0 +1,1184 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Calendar</title>
+    <style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    --primary: #356df3;
+    --background: #f3f6fc;
+    --text: #19243a;
+    --muted: #718096;
+    --border: #e2e8f0;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: linear-gradient(180deg, #eaf0ff, #f3f6fc 320px);
+    color: var(--text);
+    padding: 24px 16px;
+    min-height: 100vh;
+}
+
+.app {
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 22px;
+    margin-bottom: 18px;
+}
+
+.eyebrow {
+    color: var(--primary);
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 2px;
+}
+
+h1 {
+    font-size: clamp(26px, 4vw, 38px);
+    margin: 8px 0;
+    letter-spacing: -1px;
+}
+
+h1 span {
+    font-size: 28px;
+}
+
+h2 {
+    font-size: 19px;
+}
+
+.subtitle,
+.muted,
+.hint,
+footer {
+    color: var(--muted);
+    line-height: 1.6;
+}
+
+.subtitle {
+    font-size: 14px;
+}
+
+input,
+button {
+    font: inherit;
+    padding: 12px;
+    border-radius: 10px;
+}
+
+input {
+    min-width: 0;
+    border: 1px solid var(--border);
+    background: white;
+    color: var(--text);
+    outline: none;
+}
+
+input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px #356df31c;
+}
+
+button {
+    border: none;
+    background: var(--primary);
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+button:hover {
+    opacity: 0.88;
+}
+
+button:disabled {
+    opacity: 0.55;
+    cursor: wait;
+}
+
+#searchForm {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+#cityInput {
+    width: 175px;
+}
+
+.location-btn {
+    background: #e7edff;
+    color: #2856bf;
+    white-space: nowrap;
+}
+
+#status {
+    min-height: 22px;
+    margin: 12px 0;
+    font-size: 14px;
+    color: var(--muted);
+    overflow-wrap: anywhere;
+}
+
+#status.error {
+    color: #c43131;
+}
+
+.weather-card,
+.tip-card,
+.calendar-card,
+.panel {
+    background: white;
+    padding: 22px;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    box-shadow: 0 8px 25px rgba(30, 50, 90, 0.05);
+}
+
+.weather-card {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 16px;
+}
+
+#cityName {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+#updatedAt {
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+#temperature {
+    font-size: clamp(42px, 7vw, 52px);
+    margin: 8px 0;
+}
+
+#condition {
+    color: var(--muted);
+}
+
+#weatherIcon {
+    width: 90px;
+    height: 90px;
+}
+
+.weather-stats {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+}
+
+.stat {
+    background: #f6f8fd;
+    padding: 13px;
+    border-radius: 12px;
+}
+
+.stat span,
+.detail-item span {
+    display: block;
+    color: var(--muted);
+    font-size: 12px;
+    margin-bottom: 7px;
+}
+
+.stat strong {
+    font-size: 17px;
+}
+
+.tip-card {
+    margin: 18px 0;
+    background: #fff8e9;
+    border-color: #ffedc5;
+}
+
+.tip-card h2 {
+    margin-bottom: 10px;
+}
+
+.tip-card p,
+.day-tip {
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.calendar-header h2 {
+    text-align: center;
+}
+
+.calendar-header button {
+    padding: 10px 14px;
+    background: #eaf0ff;
+    color: var(--primary);
+}
+
+.weekdays,
+.calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.weekdays {
+    margin-bottom: 8px;
+    color: var(--muted);
+    text-align: center;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.weekdays span {
+    padding: 8px 0;
+}
+
+.calendar-days {
+    grid-auto-rows: minmax(100px, auto);
+}
+
+.day {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 4px;
+    min-width: 0;
+    padding: 8px 4px;
+    color: var(--text);
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    font-weight: normal;
+}
+
+.day:hover {
+    border-color: var(--primary);
+    opacity: 1;
+}
+
+.day.selected {
+    border: 2px solid var(--primary);
+    background: #eef3ff;
+    padding: 7px 3px;
+}
+
+.day.outside {
+    background: #f7f8fb;
+    opacity: 0.5;
+}
+
+.day.today .day-number {
+    background: var(--primary);
+    color: white;
+}
+
+.day-number {
+    display: grid;
+    place-items: center;
+    width: 25px;
+    height: 25px;
+    border-radius: 8px;
+    font-weight: bold;
+}
+
+.day img {
+    width: 34px;
+    height: 34px;
+}
+
+.day-temp {
+    font-size: 11px;
+    font-weight: bold;
+}
+
+.day-condition {
+    color: var(--muted);
+    font-size: 10px;
+    text-align: center;
+    overflow-wrap: anywhere;
+}
+
+.rain {
+    color: #2473d5;
+    font-size: 10px;
+}
+
+.task-marker {
+    color: #7c3aed;
+    font-size: 10px;
+    font-weight: bold;
+}
+
+.hint {
+    margin-top: 15px;
+    font-size: 13px;
+}
+
+.bottom-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin-top: 18px;
+}
+
+.panel h2 {
+    margin-bottom: 10px;
+}
+
+.details {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin: 18px 0;
+}
+
+.detail-item {
+    background: #f6f8fd;
+    border-radius: 12px;
+    padding: 13px;
+    min-width: 0;
+}
+
+.detail-item strong {
+    font-size: 14px;
+    overflow-wrap: anywhere;
+}
+
+.day-tip {
+    background: #fff8e9;
+    padding: 12px;
+    border-radius: 10px;
+}
+
+#taskForm {
+    display: flex;
+    gap: 8px;
+    margin: 15px 0;
+}
+
+#taskInput {
+    flex: 1;
+    width: 100%;
+}
+
+.task-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.task-row input[type="checkbox"] {
+    min-width: 17px;
+    accent-color: var(--primary);
+}
+
+.task-text {
+    flex: 1;
+    overflow-wrap: anywhere;
+    line-height: 1.4;
+}
+
+.task-text.done {
+    text-decoration: line-through;
+    color: #9aa3b2;
+}
+
+.delete-btn {
+    background: #fff0f0;
+    color: #c43131;
+    padding: 8px 10px;
+}
+
+.empty {
+    color: var(--muted);
+    font-size: 14px;
+    padding: 10px 0;
+}
+
+footer {
+    text-align: center;
+    font-size: 12px;
+    margin-top: 22px;
+}
+
+@media (max-width: 760px) {
+    .header {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    #searchForm {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+
+    #cityInput {
+        width: 100%;
+        grid-column: 1 / -1;
+    }
+
+    .location-btn {
+        grid-column: 1 / -1;
+    }
+
+    .bottom-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .weather-card,
+    .tip-card,
+    .calendar-card,
+    .panel {
+        padding: 15px;
+    }
+
+    .calendar-days {
+        gap: 4px;
+        grid-auto-rows: minmax(78px, auto);
+    }
+
+    .day {
+        padding: 5px 2px;
+        border-radius: 8px;
+    }
+
+    .day img {
+        width: 27px;
+        height: 27px;
+    }
+
+    .day-condition {
+        font-size: 9px;
+    }
+}
+
+@media (max-width: 400px) {
+    body {
+        padding: 12px 8px;
+    }
+
+    .weekdays,
+    .calendar-days {
+        gap: 2px;
+    }
+
+    .day-temp,
+    .rain {
+        font-size: 9px;
+    }
+
+    .stat {
+        padding: 9px 7px;
+    }
+
+    .stat strong {
+        font-size: 14px;
+    }
+}
+</style>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <main class="app">
+        <header class="header">
+            <div>
+                <p class="eyebrow">PLAN SMARTER</p>
+                <h1>Weather Calendar <span>☀️</span></h1>
+                <p class="subtitle">Your weather forecast and daily plans in one place.</p>
+            </div>
+
+            <form id="searchForm">
+                <input
+                    id="cityInput"
+                    type="text"
+                    placeholder="Enter city name"
+                    value="Bhopal"
+                    required
+                >
+                <button type="submit" id="searchBtn">Search</button>
+                <button type="button" id="locationBtn" class="location-btn">
+                    📍 My Location
+                </button>
+            </form>
+        </header>
+
+        <p id="status" role="status">Enter your WeatherAPI key to get started.</p>
+
+        <section class="weather-card">
+            <div class="current-weather">
+                <p id="cityName">Weather in Bhopal</p>
+                <p id="updatedAt" class="muted">Current weather</p>
+                <h2 id="temperature">--°C</h2>
+                <p id="condition">Weather condition</p>
+            </div>
+
+            <img id="weatherIcon" src="" alt="Weather icon" hidden>
+
+            <div class="weather-stats">
+                <div class="stat">
+                    <span>Feels like</span>
+                    <strong id="feelsLike">--</strong>
+                </div>
+                <div class="stat">
+                    <span>Humidity</span>
+                    <strong id="humidity">--</strong>
+                </div>
+                <div class="stat">
+                    <span>Wind</span>
+                    <strong id="wind">--</strong>
+                </div>
+            </div>
+        </section>
+
+        <section class="tip-card">
+            <h2>🌤️ Smart Weather Tip</h2>
+            <p id="smartTip">
+                Weather-based recommendations will appear here.
+            </p>
+        </section>
+
+        <section class="calendar-card">
+            <div class="calendar-header">
+                <button id="prevMonth" type="button" aria-label="Previous month">❮</button>
+                <h2 id="monthTitle">Month Year</h2>
+                <button id="nextMonth" type="button" aria-label="Next month">❯</button>
+            </div>
+
+            <div class="weekdays">
+                <span>Sun</span>
+                <span>Mon</span>
+                <span>Tue</span>
+                <span>Wed</span>
+                <span>Thu</span>
+                <span>Fri</span>
+                <span>Sat</span>
+            </div>
+
+            <div id="calendarDays" class="calendar-days"></div>
+
+            <p id="calendarStatus" class="hint">
+                Forecast availability depends on your WeatherAPI plan.
+            </p>
+        </section>
+
+        <section class="bottom-grid">
+            <div class="panel">
+                <h2>📅 Daily Forecast</h2>
+                <p id="selectedDate" class="muted">Choose a date</p>
+
+                <div class="details">
+                    <div class="detail-item">
+                        <span>Condition</span>
+                        <strong id="dayCondition">--</strong>
+                    </div>
+                    <div class="detail-item">
+                        <span>High / Low</span>
+                        <strong id="highLow">--</strong>
+                    </div>
+                    <div class="detail-item">
+                        <span>Rain chance</span>
+                        <strong id="rainChance">--</strong>
+                    </div>
+                    <div class="detail-item">
+                        <span>UV index</span>
+                        <strong id="uvIndex">--</strong>
+                    </div>
+                </div>
+
+                <p id="dayTip" class="day-tip">
+                    Select a date to see weather advice.
+                </p>
+            </div>
+
+            <div class="panel">
+                <h2>✅ My Daily Plans</h2>
+                <p id="taskDate" class="muted">Plans for selected date</p>
+
+                <form id="taskForm">
+                    <input
+                        id="taskInput"
+                        type="text"
+                        placeholder="What do you need to do?"
+                        maxlength="120"
+                        required
+                    >
+                    <button type="submit">Add</button>
+                </form>
+
+                <div id="taskList"></div>
+            </div>
+        </section>
+
+        <footer>
+            Weather data by WeatherAPI.com · Tasks saved in your browser.
+        </footer>
+    </main>
+    <SCRIPT>
+        
+const API_KEY ="ed8c37818a944c29adf40311232510";
+
+const $ = (id) => document.getElementById(id);
+
+const today = new Date();
+
+let viewYear = today.getFullYear();
+let viewMonth = today.getMonth();
+let selectedDate = formatDate(today);
+
+let forecastByDate = {};
+let tasks = loadTasks();
+let requestNumber = 0;
+
+// Convert a Date to YYYY-MM-DD using local time.
+function formatDate(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+}
+
+// Parse YYYY-MM-DD without UTC date shifting.
+function parseDate(dateString) {
+    const [year, month, day] = dateString.split("-").map(Number);
+    return new Date(year, month - 1, day);
+}
+
+function prettyDate(dateString) {
+    return parseDate(dateString).toLocaleDateString(undefined, {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric"
+    });
+}
+
+// Load tasks saved in this browser.
+function loadTasks() {
+    try {
+        const saved = JSON.parse(
+            localStorage.getItem("weatherCalendarTasks") || "[]"
+        );
+
+        return Array.isArray(saved) ? saved : [];
+    } catch {
+        return [];
+    }
+}
+
+function saveTasks() {
+    localStorage.setItem(
+        "weatherCalendarTasks",
+        JSON.stringify(tasks)
+    );
+}
+
+// Fetch weather by city or coordinates.
+async function getWeather(query) {
+    const searchQuery = query || $("cityInput").value.trim();
+
+    if (!searchQuery) return;
+
+    if (!API_KEY || API_KEY === "YOUR_WEATHERAPI_KEY") {
+        $("status").textContent =
+            "Please add your WeatherAPI key in script.js.";
+        $("status").classList.add("error");
+        return;
+    }
+
+    const currentRequest = ++requestNumber;
+
+    $("status").classList.remove("error");
+    $("status").textContent = "Loading weather...";
+    $("searchBtn").disabled = true;
+
+    try {
+        const url =
+            `https://api.weatherapi.com/v1/forecast.json?key=${encodeURIComponent(API_KEY)}&q=${encodeURIComponent(searchQuery)}&days=14&aqi=no&alerts=no`;
+
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (!response.ok || data.error) {
+            throw new Error(
+                data.error?.message || "Unable to fetch weather."
+            );
+        }
+
+        // Ignore an older response if a newer search was made.
+        if (currentRequest !== requestNumber) return;
+
+        $("cityName").textContent =
+            `${data.location.name}, ${data.location.country}`;
+
+        $("updatedAt").textContent =
+            `Local time: ${data.location.localtime}`;
+
+        $("temperature").textContent =
+            `${Math.round(data.current.temp_c)}°C`;
+
+        $("condition").textContent = data.current.condition.text;
+
+        $("weatherIcon").src =
+            "https:" + data.current.condition.icon;
+
+        $("weatherIcon").hidden = false;
+
+        $("feelsLike").textContent =
+            `${Math.round(data.current.feelslike_c)}°C`;
+
+        $("humidity").textContent = `${data.current.humidity}%`;
+
+        $("wind").textContent =
+            `${Math.round(data.current.wind_kph)} km/h`;
+
+        // Save forecasts by date for calendar lookups.
+        forecastByDate = {};
+
+        data.forecast.forecastday.forEach(day => {
+            forecastByDate[day.date] = day;
+        });
+
+        $("status").textContent =
+            `Weather loaded for ${data.location.name}.`;
+
+        $("calendarStatus").textContent =
+            `Forecast available for ${Object.keys(forecastByDate).length} day(s). The range depends on your API plan.`;
+
+        // Set the calendar to today's date in the searched location.
+        const localToday = data.location.localtime.split(" ")[0];
+
+        selectedDate = localToday;
+        const localDateObject = parseDate(localToday);
+
+        viewYear = localDateObject.getFullYear();
+        viewMonth = localDateObject.getMonth();
+
+        renderSmartTip(data.current, data.forecast.forecastday[0]);
+        renderCalendar();
+        renderSelectedDay();
+
+    } catch (error) {
+        if (currentRequest === requestNumber) {
+            $("status").textContent =
+                error.message || "Weather request failed.";
+
+            $("status").classList.add("error");
+        }
+    } finally {
+        if (currentRequest === requestNumber) {
+            $("searchBtn").disabled = false;
+        }
+    }
+}
+
+// Get weather using browser geolocation.
+function getCurrentLocation() {
+    if (!navigator.geolocation) {
+        $("status").textContent =
+            "Your browser does not support geolocation.";
+        $("status").classList.add("error");
+        return;
+    }
+
+    if (!API_KEY || API_KEY === "YOUR_WEATHERAPI_KEY") {
+        $("status").textContent =
+            "Add your WeatherAPI key before using location.";
+        $("status").classList.add("error");
+        return;
+    }
+
+    $("status").classList.remove("error");
+    $("status").textContent = "Requesting your location permission...";
+
+    $("locationBtn").disabled = true;
+
+    navigator.geolocation.getCurrentPosition(
+        async function (position) {
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
+
+            const coordinates = `${latitude},${longitude}`;
+
+            // Display coordinates in the search input while loading.
+            $("cityInput").value = coordinates;
+
+            await getWeather(coordinates);
+
+            $("locationBtn").disabled = false;
+        },
+        function (error) {
+            $("status").classList.add("error");
+
+            if (error.code === error.PERMISSION_DENIED) {
+                $("status").textContent =
+                    "Location permission denied. Allow location access in your browser settings.";
+            } else if (error.code === error.TIMEOUT) {
+                $("status").textContent =
+                    "Location request timed out. Please try again.";
+            } else {
+                $("status").textContent =
+                    "Could not determine your location. Try searching by city.";
+            }
+
+            $("locationBtn").disabled = false;
+        },
+        {
+            enableHighAccuracy: false,
+            timeout: 10000,
+            maximumAge: 300000
+        }
+    );
+}
+
+// Build helpful recommendations using the forecast.
+function renderSmartTip(current, todayForecast) {
+    const tips = [];
+    const day = todayForecast.day;
+
+    if (day.daily_chance_of_rain >= 40) {
+        tips.push(
+            "🌧️ Rain is possible. Carry an umbrella and keep an indoor backup plan."
+        );
+    }
+
+    if (current.temp_c >= 35) {
+        tips.push(
+            "☀️ It is very hot. Drink water and avoid strenuous outdoor activity during peak heat."
+        );
+    }
+
+    if (current.uv >= 6) {
+        tips.push(
+            "🧴 UV is high. Use sun protection when going outside."
+        );
+    }
+
+    if (day.maxwind_kph >= 35) {
+        tips.push(
+            "💨 Strong winds may affect outdoor activities."
+        );
+    }
+
+    $("smartTip").textContent = tips.length
+        ? tips.join(" ")
+        : "🌤️ No major weather-related planning tip based on today's forecast.";
+}
+
+// Render the six-week monthly calendar.
+function renderCalendar() {
+    const firstDay = new Date(viewYear, viewMonth, 1);
+
+    const startDate = new Date(
+        viewYear,
+        viewMonth,
+        1 - firstDay.getDay()
+    );
+
+    $("monthTitle").textContent =
+        firstDay.toLocaleDateString(undefined, {
+            month: "long",
+            year: "numeric"
+        });
+
+    const calendar = $("calendarDays");
+    calendar.innerHTML = "";
+
+    for (let i = 0; i < 42; i++) {
+        const date = new Date(startDate);
+        date.setDate(startDate.getDate() + i);
+
+        const dateString = formatDate(date);
+        const forecast = forecastByDate[dateString];
+
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "day";
+        button.setAttribute("aria-label", prettyDate(dateString));
+
+        if (date.getMonth() !== viewMonth) {
+            button.classList.add("outside");
+        }
+
+        if (dateString === selectedDate) {
+            button.classList.add("selected");
+        }
+
+        if (dateString === formatDate(new Date())) {
+            button.classList.add("today");
+        }
+
+        const number = document.createElement("span");
+        number.className = "day-number";
+        number.textContent = date.getDate();
+        button.append(number);
+
+        if (forecast) {
+            const icon = document.createElement("img");
+            icon.src = "https:" + forecast.day.condition.icon;
+            icon.alt = forecast.day.condition.text;
+            button.append(icon);
+
+            const temperature = document.createElement("span");
+            temperature.className = "day-temp";
+            temperature.textContent =
+                `${Math.round(forecast.day.maxtemp_c)}°/${Math.round(forecast.day.mintemp_c)}°`;
+
+            button.append(temperature);
+
+            const condition = document.createElement("span");
+            condition.className = "day-condition";
+            condition.textContent = forecast.day.condition.text;
+            button.append(condition);
+
+            const rain = document.createElement("span");
+            rain.className = "rain";
+            rain.textContent =
+                `💧 ${forecast.day.daily_chance_of_rain}%`;
+
+            button.append(rain);
+        } else {
+            const unavailable = document.createElement("span");
+            unavailable.className = "day-condition";
+            unavailable.textContent = "No forecast";
+            button.append(unavailable);
+        }
+
+        const count = tasks.filter(
+            task => task.date === dateString
+        ).length;
+
+        if (count > 0) {
+            const marker = document.createElement("span");
+            marker.className = "task-marker";
+            marker.textContent =
+                `• ${count} plan${count > 1 ? "s" : ""}`;
+
+            button.append(marker);
+        }
+
+        button.addEventListener("click", () => {
+            selectedDate = dateString;
+            viewYear = date.getFullYear();
+            viewMonth = date.getMonth();
+
+            renderCalendar();
+            renderSelectedDay();
+        });
+
+        calendar.append(button);
+    }
+}
+
+// Display weather details for the selected date.
+function renderSelectedDay() {
+    $("selectedDate").textContent = prettyDate(selectedDate);
+
+    $("taskDate").textContent =
+        `Plans for ${parseDate(selectedDate).toLocaleDateString(undefined, {
+            day: "numeric",
+            month: "short",
+            year: "numeric"
+        })}`;
+
+    const forecast = forecastByDate[selectedDate];
+
+    if (forecast) {
+        const day = forecast.day;
+
+        $("dayCondition").textContent = day.condition.text;
+
+        $("highLow").textContent =
+            `${Math.round(day.maxtemp_c)}° / ${Math.round(day.mintemp_c)}°C`;
+
+        $("rainChance").textContent =
+            `${day.daily_chance_of_rain}%`;
+
+        $("uvIndex").textContent = day.uv;
+
+        const tips = [];
+
+        if (day.daily_chance_of_rain >= 40) {
+            tips.push("🌧️ Rain is possible. Consider an indoor alternative.");
+        }
+
+        if (day.maxtemp_c >= 35) {
+            tips.push("☀️ Hot weather expected. Plan outdoor activities for cooler hours.");
+        }
+
+        if (day.uv >= 6) {
+            tips.push("🧴 High UV expected. Use sun protection outdoors.");
+        }
+
+        $("dayTip").textContent = tips.length
+            ? tips.join(" ")
+            : "No special tip based on this forecast. Check conditions again before heading out.";
+    } else {
+        $("dayCondition").textContent = "Unavailable";
+        $("highLow").textContent = "--";
+        $("rainChance").textContent = "--";
+        $("uvIndex").textContent = "--";
+
+        $("dayTip").textContent =
+            "Forecast is unavailable for this date. You can still add plans.";
+    }
+
+    renderTasks();
+}
+
+// Render tasks belonging to the selected date.
+function renderTasks() {
+    const list = $("taskList");
+    list.innerHTML = "";
+
+    const dayTasks = tasks.filter(
+        task => task.date === selectedDate
+    );
+
+    if (dayTasks.length === 0) {
+        const empty = document.createElement("p");
+        empty.className = "empty";
+        empty.textContent = "No plans yet. Add your first task above.";
+        list.append(empty);
+        return;
+    }
+
+    dayTasks.forEach(task => {
+        const row = document.createElement("div");
+        row.className = "task-row";
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = Boolean(task.completed);
+        checkbox.setAttribute("aria-label", "Mark task complete");
+
+        const text = document.createElement("span");
+        text.className = "task-text";
+        text.textContent = task.text;
+
+        if (task.completed) {
+            text.classList.add("done");
+        }
+
+        const deleteButton = document.createElement("button");
+        deleteButton.type = "button";
+        deleteButton.className = "delete-btn";
+        deleteButton.textContent = "Delete";
+
+        checkbox.addEventListener("change", () => {
+            task.completed = checkbox.checked;
+            saveTasks();
+            renderTasks();
+            renderCalendar();
+        });
+
+        deleteButton.addEventListener("click", () => {
+            tasks = tasks.filter(item => item.id !== task.id);
+            saveTasks();
+            renderTasks();
+            renderCalendar();
+        });
+
+        row.append(checkbox, text, deleteButton);
+        list.append(row);
+    });
+}
+
+// Search a city.
+$("searchForm").addEventListener("submit", event => {
+    event.preventDefault();
+    getWeather();
+});
+
+// Current location button.
+$("locationBtn").addEventListener("click", getCurrentLocation);
+
+// Previous month.
+$("prevMonth").addEventListener("click", () => {
+    viewMonth--;
+
+    if (viewMonth < 0) {
+        viewMonth = 11;
+        viewYear--;
+    }
+
+    renderCalendar();
+});
+
+// Next month.
+$("nextMonth").addEventListener("click", () => {
+    viewMonth++;
+
+    if (viewMonth > 11) {
+        viewMonth = 0;
+        viewYear++;
+    }
+
+    renderCalendar();
+});
+
+// Add a plan for the selected date.
+$("taskForm").addEventListener("submit", event => {
+    event.preventDefault();
+
+    const text = $("taskInput").value.trim();
+
+    if (!text) return;
+
+    tasks.push({
+        id: `${Date.now()}-${Math.random()}`,
+        text,
+        date: selectedDate,
+        completed: false
+    });
+
+    saveTasks();
+    $("taskInput").value = "";
+
+    renderTasks();
+    renderCalendar();
+});
+
+// Initial page setup.
+renderCalendar();
+renderSelectedDay();
+getWeather();
+
+    </SCRIPT>
+
+    <script src="script.js"></script>
+</body>
+</html>
